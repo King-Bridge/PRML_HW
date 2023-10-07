@@ -44,7 +44,8 @@ class LDA():
         print("各样本协方差矩阵为：\n", self.sigma, self.sigma[0].shape, self.sigma[1].shape)
 
     def predict(self, X):
-        pass
+        result = []
+        return result
 
 lda = LDA()
 lda.fit(X_train, y_train)
