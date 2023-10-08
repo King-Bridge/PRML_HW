@@ -11,11 +11,11 @@ X,y = cancer['data'], cancer['target']
 X = StandardScaler().fit_transform(X)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_state=42)
 
-# Example: use LogisticRegression and evaluate the model
-logreg = linear_model.LogisticRegression(C=1e3)
-logreg.fit(X_train, y_train)
-y_pred = logreg.predict(X_test)
-print('precision: ', accuracy_score(y_test, y_pred))
+# # Example: use LogisticRegression and evaluate the model
+# logreg = linear_model.LogisticRegression(C=1e3)
+# logreg.fit(X_train, y_train)
+# y_pred = logreg.predict(X_test)
+# print('precision: ', accuracy_score(y_test, y_pred))
 
 # TODO: Write your own LDA and evaluate it
 class LDA():
@@ -55,14 +55,17 @@ class LDA():
         # print(self.w, self.w.shape)
 
         # 计算样本投影之后的均值和方差
+        # for i in range (2):
+        #     self.var.append(np.dot(np.transpose(self.w), np.dot(Sigma[i], self.w)))
+        #     self.mean.append(np.dot(np.array([Mu[1]]), self.w))
+        ### 这里用投影后的列表重新算均值和方差精度更高
         for i in range (2):
             proj = []
             for sam in x[i]:
                 proj.append(np.dot(sam, self.w))
             self.mean.append(np.mean(proj))
             self.var.append(np.var(proj))
-        # print("投影后的均值和方差分别为：\n", self.mean, "\n", self.var)
-
+        print("投影后的均值和方差分别为：\n", self.mean, "\n", self.var)
 
     def predict(self, X):
         result = []
