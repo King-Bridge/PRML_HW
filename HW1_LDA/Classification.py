@@ -4,6 +4,10 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
+import matplotlib.pyplot as plt
+import pandas as pd
+from itertools import chain
+
 # import data
 n_samples = 300
 cancer = datasets.load_breast_cancer()
@@ -17,12 +21,70 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_s
 # y_pred = logreg.predict(X_test)
 # print('precision: ', accuracy_score(y_test, y_pred))
 
+def draw_histogram(x_min, x_max, x_data, w, color_list):
+    x_axis1 = [x for x in range (x_min, x_max, 1)]
+    x_axis2 = [x+1 for x in range (x_min, x_max, 1)]
+    x_axis = list(chain.from_iterable(zip(x_axis1, x_axis2)))
+    labels = ['negative count ratio', 'positive count ratio']
+    for i in range (2):
+        points = []
+        for sam in x_data[i]:
+            points.append(float(np.dot(sam, w)))
+        # print(points)
+        s = pd.cut(points, bins=[x for x in range (-15, 15, 1)])
+        # print(s.value_counts())
+        values = (s.value_counts()).values
+        values = [value/len(x_data[i]) for value in values]
+        # print(values) 
+        y_axis = [value for value in values for i in range (2)]
+        # print(y_axis)
+        # plt.step(x_axis, y_axis)
+        if i == 0: color = color_list[0]
+        else:color = color_list[1]
+        plt.plot(x_axis, y_axis, 'o--', color=color, alpha=0, linewidth=5)
+        plt.fill_between(x_axis, y_axis, 0, color=color, alpha=0.5, label=labels[i])
+
+
 # TODO: Write your own LDA and evaluate it
 class LDA():
     def __init__(self):
         self.mean = [] # 投影后的均值
         self.var = [] # 投影后的方差
         self.w = None # 投影线
+
+    def draw_gauss(self):
+        x = np.arange(-12, 20, 0.1)
+        y = []
+        for i in range (2):
+            y.append((1 / (np.sqrt(2*np.pi) * self.var[i])) * np.e ** ( - (x - self.mean[i]) ** 2 / (2 * self.var[i] ** 2)))
+        plt.plot(x, y[0], 'b-', linewidth=2, label='negative (fit by normal distribution)')
+        plt.plot(x, y[1], 'r-', linewidth=2, label='positive (fit by normal distribution)')
+        plt.legend(loc='upper right')
+
+    def visualize(self, X_train, X_test, y_train, y_test):
+        
+        plt.figure(figsize=(24, 6))
+        plt.subplot(121)
+        plt.title('train data')
+        # 先画实际分布图像
+        x_line = [[],[]]
+        for i in range (X_train.shape[0]):
+            x_line[y_train[i]].append(X_train[i])
+        draw_histogram(-15, 14, x_line, self.w, ['blue', 'red'])
+        self.draw_gauss()
+
+        plt.subplot(122)
+        plt.title('test data')
+        # 最后画预测图像
+        x_points = [[],[]]
+        for i in range (X_test.shape[0]):
+            x_points[y_test[i]].append(X_test[i])
+        draw_histogram(-15, 14, x_points, self.w, ['purple', 'orange'])
+        self.draw_gauss()
+
+        plt.show()
+        
+
 
     def fit(self, X, y):
         # 将不同类的样本分开
@@ -83,3 +145,5 @@ lda = LDA()
 lda.fit(X_train, y_train)
 y_pred = lda.predict(X_test)
 print('precision: ', accuracy_score(y_test, y_pred))
+
+lda.visualize(X_train, X_test, y_train, y_test)
