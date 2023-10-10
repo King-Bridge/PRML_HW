@@ -21,9 +21,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_s
 # y_pred = logreg.predict(X_test)
 # print('precision: ', accuracy_score(y_test, y_pred))
 
-def draw_histogram(x_min, x_max, x_data, w, color_list):
-    x_axis1 = [x for x in range (x_min, x_max, 1)]
-    x_axis2 = [x+1 for x in range (x_min, x_max, 1)]
+def draw_histogram(x_min, x_max, step, x_data, w, color_list):
+    x_axis1 = [x/step for x in range (x_min, x_max, 1)]
+    x_axis2 = [(x+1)/step for x in range (x_min, x_max, 1)]
     x_axis = list(chain.from_iterable(zip(x_axis1, x_axis2)))
     labels = ['negative count ratio', 'positive count ratio']
     for i in range (2):
@@ -31,7 +31,7 @@ def draw_histogram(x_min, x_max, x_data, w, color_list):
         for sam in x_data[i]:
             points.append(float(np.dot(sam, w)))
         # print(points)
-        s = pd.cut(points, bins=[x for x in range (-15, 15, 1)])
+        s = pd.cut(points, bins=[x/step for x in range (x_min, x_max+1, 1)])
         # print(s.value_counts())
         values = (s.value_counts()).values
         values = [value/len(x_data[i]) for value in values]
@@ -56,7 +56,7 @@ class LDA():
         x = np.arange(-12, 20, 0.1)
         y = []
         for i in range (2):
-            y.append((1 / (np.sqrt(2*np.pi) * self.var[i])) * np.e ** ( - (x - self.mean[i]) ** 2 / (2 * self.var[i] ** 2)))
+            y.append((1 / (np.sqrt(2*np.pi) * self.var[i])) * np.e ** ( - ((x - self.mean[i]) ** 2) / (2 * self.var[i] ** 2)))
         plt.plot(x, y[0], 'b-', linewidth=2, label='negative (fit by normal distribution)')
         plt.plot(x, y[1], 'r-', linewidth=2, label='positive (fit by normal distribution)')
         plt.legend(loc='upper right')
@@ -70,7 +70,7 @@ class LDA():
         x_line = [[],[]]
         for i in range (X_train.shape[0]):
             x_line[y_train[i]].append(X_train[i])
-        draw_histogram(-15, 14, x_line, self.w, ['blue', 'red'])
+        draw_histogram(-30, 29, 2, x_line, self.w, ['blue', 'red'])
         self.draw_gauss()
 
         plt.subplot(122)
@@ -79,7 +79,7 @@ class LDA():
         x_points = [[],[]]
         for i in range (X_test.shape[0]):
             x_points[y_test[i]].append(X_test[i])
-        draw_histogram(-15, 14, x_points, self.w, ['purple', 'orange'])
+        draw_histogram(-30, 29, 2, x_points, self.w, ['purple', 'orange'])
         self.draw_gauss()
 
         plt.show()
